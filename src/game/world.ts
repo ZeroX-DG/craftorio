@@ -1,20 +1,26 @@
 import * as THREE from "three";
-import { Block, BlockType } from "./block";
-import { Material } from "./material";
+import { Block } from "./block";
+import { GrassBlock } from "./blocks/grass";
+import { DirtBlock } from "./blocks/dirt";
+import { BlockTypeName } from "./blockType";
 
 export class World {
   readonly SIZE = new THREE.Vector3(16, 10, 16);
   readonly MAX_BLOCKS = 1000000;
-  private blocks: Map<BlockType, Block[]> = new Map();
-  private blockMeshes: Map<BlockType, THREE.InstancedMesh> = new Map();
+  private blocks: Map<BlockTypeName, Block[]> = new Map();
+  private blockMeshes: Map<BlockTypeName, THREE.InstancedMesh> = new Map();
+
+  constructor(private scene: THREE.Scene) {}
 
   generate() {
     for (let x = 0; x < this.SIZE.x; x++) {
       for (let y = 0; y < this.SIZE.y; y++) {
         for (let z = 0; z < this.SIZE.z; z++) {
-          let block = new Block(BlockType.Dirt, x, y, z);
+          let block;
           if (y == this.SIZE.y - 1) {
-            block.blockType = BlockType.Grass;
+            block = new Block(new GrassBlock(), x, y, z);
+          } else {
+            block = new Block(new DirtBlock(), x, y, z);
           }
           this.addBlock(block);
         }
@@ -22,41 +28,27 @@ export class World {
     }
   }
 
-  initialise(scene: THREE.Scene) {
-    const blockGeometry = new THREE.BoxGeometry(1, 1, 1);
-    for (const blockTypeKey in BlockType) {
-      if (isNaN(Number(blockTypeKey))) {
-        const blockType = BlockType[
-          blockTypeKey as any
-        ] as unknown as BlockType;
-        const blockMaterial = Material.getMaterialForBlockType(blockType);
-        const blockMesh = new THREE.InstancedMesh(
-          blockGeometry,
-          blockMaterial,
-          this.MAX_BLOCKS,
-        );
-        blockMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
-        this.blockMeshes.set(blockType, blockMesh);
-        this.blocks.set(blockType, []);
-      }
-    }
-
-    scene.add(...this.blockMeshes.values());
-  }
-
-  getBlockMesh(blockType: BlockType): THREE.InstancedMesh {
+  getBlockMesh(blockType: BlockTypeName): THREE.InstancedMesh {
     return this.blockMeshes.get(blockType)!;
   }
 
-  getBlockTypes(): BlockType[] {
-    return [...this.blocks.keys()];
+  getAllBlocks() {
+    return this.blocks.entries();
   }
 
-  getBlocks(blockType: BlockType) {
+  getBlocks(blockType: BlockTypeName) {
     return this.blocks.get(blockType)!;
   }
 
   addBlock(block: Block) {
-    this.blocks.get(block.blockType)!.push(block);
+    if (!this.blocks.has(block.blockType.name)) {
+      this.blocks.set(block.blockType.name, []);
+    }
+    if (!this.blockMeshes.has(block.blockType.name)) {
+      const mesh = block.blockType.getMesh();
+      this.blockMeshes.set(block.blockType.name, mesh);
+      this.scene.add(mesh);
+    }
+    this.blocks.get(block.blockType.name)!.push(block);
   }
 }

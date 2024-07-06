@@ -17,7 +17,7 @@ export class Game {
       1000,
     );
     this.renderer = new THREE.WebGLRenderer();
-    this.world = new World();
+    this.world = new World(this.scene);
   }
 
   setup() {
@@ -36,7 +36,6 @@ export class Game {
 
     this.scene.add(new THREE.GridHelper(100, 10));
 
-    this.world.initialise(this.scene);
     this.world.generate();
 
     (window as any).game = this;
@@ -48,10 +47,7 @@ export class Game {
     this.renderer.setAnimationLoop(() => {
       const dummy = new THREE.Object3D();
 
-      const blockTypes = this.world.getBlockTypes();
-
-      for (const blockType of blockTypes) {
-        const blocks = this.world.getBlocks(blockType);
+      for (const [blockType, blocks] of this.world.getAllBlocks()) {
         const mesh = this.world.getBlockMesh(blockType);
 
         mesh.count = blocks.length;

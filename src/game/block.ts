@@ -1,16 +1,12 @@
-import { Vector3 } from "three";
-
-export enum BlockType {
-  Grass,
-  Dirt,
-}
+import * as THREE from "three";
+import { BlockType } from "./blockType";
 
 export class Block {
-  position: Vector3;
+  position: THREE.Vector3;
   blockType: BlockType;
 
   constructor(blockType: BlockType, x: number, y: number, z: number) {
-    this.position = new Vector3(x, y, z);
+    this.position = new THREE.Vector3(x, y, z);
     this.blockType = blockType;
   }
 }
