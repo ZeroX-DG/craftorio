@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { Texture } from "./texture";
-import { BlockType } from "./block/block";
+import { BlockType } from "./block";
 
 export namespace Material {
   export const GRASS_TOP = new THREE.MeshStandardMaterial({

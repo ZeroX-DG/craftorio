@@ -1,11 +1,9 @@
 import * as THREE from "three";
-import { Block, BlockType } from "./block/block";
-import { GrassBlock } from "./block/grass";
-import { DirtBlock } from "./block/dirt";
+import { Block, BlockType } from "./block";
 import { Material } from "./material";
 
 export class World {
-  readonly SIZE = new THREE.Vector3(10, 10, 10);
+  readonly SIZE = new THREE.Vector3(16, 10, 16);
   readonly MAX_BLOCKS = 1000000;
   private blocks: Map<BlockType, Block[]> = new Map();
   private blockMeshes: Map<BlockType, THREE.InstancedMesh> = new Map();
@@ -14,11 +12,9 @@ export class World {
     for (let x = 0; x < this.SIZE.x; x++) {
       for (let y = 0; y < this.SIZE.y; y++) {
         for (let z = 0; z < this.SIZE.z; z++) {
-          let block;
+          let block = new Block(BlockType.Dirt, x, y, z);
           if (y == this.SIZE.y - 1) {
-            block = new GrassBlock(x, y, z);
-          } else {
-            block = new DirtBlock(x, y, z);
+            block.blockType = BlockType.Grass;
           }
           this.addBlock(block);
         }
