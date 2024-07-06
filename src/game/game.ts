@@ -1,7 +1,6 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { World } from "./world";
-import { Material } from "./material";
 
 export class Game {
   scene: THREE.Scene;
@@ -37,6 +36,7 @@ export class Game {
 
     this.scene.add(new THREE.GridHelper(100, 10));
 
+    this.world.initialise(this.scene);
     this.world.generate();
 
     (window as any).game = this;
@@ -45,29 +45,30 @@ export class Game {
   render(container: HTMLElement) {
     this.setup();
 
-    const blockGeometry = new THREE.BoxGeometry();
-    const blockMatrix = new THREE.Object3D();
-
-    for (const [blockType, blocks] of this.world.blockByTypes) {
-      const material = Material.getMaterialForBlockType(blockType);
-      const blockMesh = new THREE.InstancedMesh(
-        blockGeometry,
-        material,
-        blocks.length,
-      );
-      for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i];
-        blockMatrix.position.x = block.position.x;
-        blockMatrix.position.y = block.position.y;
-        blockMatrix.position.z = block.position.z;
-
-        blockMatrix.updateMatrix();
-        blockMesh.setMatrixAt(i, blockMatrix.matrix);
-      }
-      this.scene.add(blockMesh);
-    }
-
     this.renderer.setAnimationLoop(() => {
+      const dummy = new THREE.Object3D();
+
+      const blockTypes = this.world.getBlockTypes();
+
+      for (const blockType of blockTypes) {
+        const blocks = this.world.getBlocks(blockType);
+        const mesh = this.world.getBlockMesh(blockType);
+
+        mesh.count = blocks.length;
+
+        for (let i = 0; i < blocks.length; i++) {
+          const block = blocks[i];
+          dummy.position.set(
+            block.position.x,
+            block.position.y,
+            block.position.z,
+          );
+          dummy.updateMatrix();
+          mesh.setMatrixAt(i, dummy.matrix);
+        }
+        mesh.instanceMatrix.needsUpdate = true;
+        mesh.computeBoundingSphere();
+      }
       this.renderer.render(this.scene, this.camera);
     });
 
