@@ -50,27 +50,10 @@ export class Game {
   async render(container: HTMLElement) {
     await this.setup();
 
+    const clock = new THREE.Clock();
+
     this.renderer.setAnimationLoop(() => {
-      const dummy = new THREE.Object3D();
-
-      for (const [blockType, blocks] of this.world.getAllBlocks()) {
-        const mesh = this.world.getBlockMesh(blockType);
-
-        mesh.count = blocks.length;
-
-        for (let i = 0; i < blocks.length; i++) {
-          const block = blocks[i];
-          dummy.position.set(
-            block.position.x,
-            block.position.y,
-            block.position.z,
-          );
-          dummy.updateMatrix();
-          mesh.setMatrixAt(i, dummy.matrix);
-        }
-        mesh.instanceMatrix.needsUpdate = true;
-        mesh.computeBoundingSphere();
-      }
+      this.world.update(clock.getDelta());
       this.renderer.render(this.scene, this.camera);
     });
 

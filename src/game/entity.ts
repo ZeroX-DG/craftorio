@@ -4,11 +4,13 @@ export type EntityActions =
   | "MoveForward"
   | "MoveBackward"
   | "MoveLeft"
-  | "MoveRight";
+  | "MoveRight"
+  | "Idle";
 
 export abstract class Entity {
   abstract size: THREE.Vector3;
   abstract model: THREE.Group;
+  abstract handleAction(action: EntityActions): void;
 
   moveInCurrentDirection(speed: number) {
     const euler = new THREE.Euler(0, this.rotation.y, 0);

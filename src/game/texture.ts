@@ -13,4 +13,5 @@ export namespace Texture {
   export const GRASS_TOP = loadTexture("grass_block_top.png");
   export const GRASS_SIDE = loadTexture("grass_block_side.png");
   export const DIRT = loadTexture("dirt.png");
+  export const OLIVER_SKIN = loadTexture("oliver.png");
 }
