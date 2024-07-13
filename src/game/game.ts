@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { World } from "./world";
+import { Model } from "./model";
 
 export class Game {
   scene: THREE.Scene;
@@ -21,7 +22,8 @@ export class Game {
     this.world = new World(this.scene);
   }
 
-  setup() {
+  async setup() {
+    await Model.loadModels();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     this.scene.add(new THREE.DirectionalLight(0xf7d67c, 2));
@@ -42,8 +44,8 @@ export class Game {
     (window as any).game = this;
   }
 
-  render(container: HTMLElement) {
-    this.setup();
+  async render(container: HTMLElement) {
+    await this.setup();
 
     this.renderer.setAnimationLoop(() => {
       const dummy = new THREE.Object3D();

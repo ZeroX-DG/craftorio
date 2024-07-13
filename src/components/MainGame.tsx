@@ -6,7 +6,9 @@ export const MainGame = () => {
 
     createEffect(() => {
         const game = new Game();
-        game.render(gameContainer);
+        game.render(gameContainer).then(() => {
+            console.log("Game Start!");
+        });
     });
 
     return (

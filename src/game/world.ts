@@ -3,12 +3,14 @@ import { Block } from "./block";
 import { GrassBlock } from "./blocks/grass";
 import { DirtBlock } from "./blocks/dirt";
 import { BlockTypeName } from "./blockType";
+import { Player } from "./player";
 
 export class World {
   readonly SIZE = new THREE.Vector3(16, 10, 16);
   readonly MAX_BLOCKS = 1000000;
   private blocks: Map<BlockTypeName, Block[]> = new Map();
   private blockMeshes: Map<BlockTypeName, THREE.InstancedMesh> = new Map();
+  private players: Player[] = [];
 
   constructor(private scene: THREE.Scene) {}
 
@@ -26,6 +28,14 @@ export class World {
         }
       }
     }
+
+    this.addPlayer(this.SIZE.x / 2, this.SIZE.y + 1, this.SIZE.z / 2);
+  }
+
+  addPlayer(x: number, y: number, z: number) {
+    const player = new Player(x, y, z);
+    this.scene.add(player.model);
+    this.players.push(player);
   }
 
   getBlockMesh(blockType: BlockTypeName): THREE.InstancedMesh {
