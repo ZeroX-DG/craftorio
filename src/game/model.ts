@@ -1,4 +1,4 @@
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { GLTFLoader, GLTF } from "three/addons/loaders/GLTFLoader.js";
 import * as THREE from "three";
 
 export namespace Model {
@@ -7,18 +7,12 @@ export namespace Model {
   export let PLAYER!: THREE.Group;
 
   const loadModel = (path: string) =>
-    new Promise<THREE.Group>((resolve, reject) =>
-      loader.load(
-        path,
-        (gltf) => {
-          resolve(gltf.scene);
-        },
-        undefined,
-        reject,
-      ),
+    new Promise<GLTF>((resolve, reject) =>
+      loader.load(path, resolve, undefined, reject),
     );
 
   export const loadModels = async () => {
-    PLAYER = await loadModel("player.gltf");
+    const player = await loadModel("player.gltf");
+    PLAYER = player.scene;
   };
 }

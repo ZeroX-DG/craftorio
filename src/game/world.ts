@@ -3,16 +3,30 @@ import { Block } from "./block";
 import { GrassBlock } from "./blocks/grass";
 import { DirtBlock } from "./blocks/dirt";
 import { BlockTypeName } from "./blockType";
-import { Player } from "./player";
+import { hookEntityKeyboardControls } from "./control";
+import { Player } from "./entities/player";
 
 export class World {
   readonly SIZE = new THREE.Vector3(16, 10, 16);
   readonly MAX_BLOCKS = 1000000;
   private blocks: Map<BlockTypeName, Block[]> = new Map();
   private blockMeshes: Map<BlockTypeName, THREE.InstancedMesh> = new Map();
-  private players: Player[] = [];
+  private player: Player = new Player(
+    this.SIZE.x / 2,
+    this.SIZE.y + 1,
+    this.SIZE.z / 2,
+  );
 
   constructor(private scene: THREE.Scene) {}
+
+  init() {
+    this.scene.add(this.player.model);
+    hookEntityKeyboardControls(this.player, {
+      w: "MoveForward",
+      s: "MoveBackward",
+    });
+    this.generate();
+  }
 
   generate() {
     for (let x = 0; x < this.SIZE.x; x++) {
@@ -28,14 +42,6 @@ export class World {
         }
       }
     }
-
-    this.addPlayer(this.SIZE.x / 2, this.SIZE.y + 1, this.SIZE.z / 2);
-  }
-
-  addPlayer(x: number, y: number, z: number) {
-    const player = new Player(x, y, z);
-    this.scene.add(player.model);
-    this.players.push(player);
   }
 
   getBlockMesh(blockType: BlockTypeName): THREE.InstancedMesh {
