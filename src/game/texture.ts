@@ -4,7 +4,13 @@ export namespace Texture {
   const texture_loader = new THREE.TextureLoader();
   texture_loader.setPath("textures/");
 
-  export const GRASS_TOP = texture_loader.load("grass_top.webp");
-  export const GRASS_SIDE = texture_loader.load("grass_side.webp");
-  export const DIRT = texture_loader.load("dirt.webp");
+  const loadTexture = (path: string) => {
+    const texture = texture_loader.load(path);
+    texture.magFilter = THREE.NearestFilter;
+    return texture;
+  };
+
+  export const GRASS_TOP = loadTexture("grass_block_top.png");
+  export const GRASS_SIDE = loadTexture("grass_block_side.png");
+  export const DIRT = loadTexture("dirt.png");
 }

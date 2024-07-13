@@ -17,6 +17,7 @@ export class Game {
       1000,
     );
     this.renderer = new THREE.WebGLRenderer();
+
     this.world = new World(this.scene);
   }
 

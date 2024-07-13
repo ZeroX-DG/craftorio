@@ -6,16 +6,16 @@ export type BlockTypeMaterials =
   | {
       side:
         | {
-            n: THREE.Material;
-            e: THREE.Material;
-            w: THREE.Material;
-            s: THREE.Material;
+            n: THREE.MeshStandardMaterial;
+            e: THREE.MeshStandardMaterial;
+            w: THREE.MeshStandardMaterial;
+            s: THREE.MeshStandardMaterial;
           }
-        | THREE.Material;
-      top: THREE.Material;
-      bottom: THREE.Material;
+        | THREE.MeshStandardMaterial;
+      top: THREE.MeshStandardMaterial;
+      bottom: THREE.MeshStandardMaterial;
     }
-  | THREE.Material;
+  | THREE.MeshStandardMaterial;
 
 export abstract class BlockType {
   abstract name: BlockTypeName;
@@ -31,7 +31,7 @@ export abstract class BlockType {
    * 5. Positive Z (front)
    * 6. Negative Z (back)
    */
-  protected getMaterialArray(): THREE.Material[] {
+  protected getMaterialArray(): THREE.MeshStandardMaterial[] {
     const material = this.materials;
 
     if ("top" in material) {
