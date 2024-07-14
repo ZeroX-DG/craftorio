@@ -10,14 +10,12 @@ export type EntityActions =
 export abstract class Entity {
   abstract size: THREE.Vector3;
   abstract model: THREE.Group;
-  abstract handleAction(action: EntityActions): void;
+  abstract update(delta: number, action: EntityActions): void;
 
-  moveInCurrentDirection(speed: number) {
-    const euler = new THREE.Euler(0, this.rotation.y, 0);
-    const quat = new THREE.Quaternion().setFromEuler(euler);
-    const vector = new THREE.Vector3(0, 0, speed).applyQuaternion(quat);
-    this.position.add(vector);
-  }
+  rotateAxis = new THREE.Vector3(0, 1, 0);
+  rotateQuarternion = new THREE.Quaternion();
+  direction = new THREE.Vector3();
+  velocity = 4;
 
   get position() {
     return this.model.position;
@@ -25,13 +23,5 @@ export abstract class Entity {
 
   get rotation() {
     return this.model.rotation;
-  }
-
-  moveForward() {
-    this.moveInCurrentDirection(0.5);
-  }
-
-  moveBackward() {
-    this.moveInCurrentDirection(-0.5);
   }
 }

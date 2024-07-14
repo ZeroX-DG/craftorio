@@ -3,8 +3,9 @@ import { Block } from "./block";
 import { GrassBlock } from "./blocks/grass";
 import { DirtBlock } from "./blocks/dirt";
 import { BlockTypeName } from "./blockType";
-import { hookEntityKeyboardControls } from "./control";
 import { Player } from "./entities/player";
+import { GameConfig } from "./game";
+import { EntityActions } from "./entity";
 
 export class World {
   readonly SIZE = new THREE.Vector3(16, 10, 16);
@@ -15,16 +16,17 @@ export class World {
     this.SIZE.x / 2,
     this.SIZE.y + 1,
     this.SIZE.z / 2,
+    this,
   );
 
-  constructor(private scene: THREE.Scene) {}
+  constructor(
+    public scene: THREE.Scene,
+    public camera: THREE.Camera,
+    public config: GameConfig,
+  ) {}
 
   init() {
     this.scene.add(this.player.model);
-    hookEntityKeyboardControls(this.player, {
-      w: "MoveForward",
-      s: "MoveBackward",
-    });
     this.generate();
   }
 
@@ -44,7 +46,7 @@ export class World {
     }
   }
 
-  update(delta: number) {
+  update(delta: number, playerAction: EntityActions) {
     const dummy = new THREE.Object3D();
 
     for (const [blockType, blocks] of this.getAllBlocks()) {
@@ -66,7 +68,7 @@ export class World {
       mesh.computeBoundingSphere();
     }
 
-    this.player.update(delta);
+    this.player.update(delta, playerAction);
   }
 
   getBlockMesh(blockType: BlockTypeName): THREE.InstancedMesh {
