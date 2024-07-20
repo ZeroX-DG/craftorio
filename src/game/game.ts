@@ -15,7 +15,7 @@ export class Game {
   world!: World;
 
   config: GameConfig = {
-    thirdPersonMode: true,
+    thirdPersonMode: false,
   };
 
   playerActions: Set<EntityAction> = new Set();

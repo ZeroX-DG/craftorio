@@ -58,31 +58,40 @@ export class Player extends Entity {
   }
 
   private updateCameraAngle(actions: Set<EntityAction>) {
-    if (this.world.config.thirdPersonMode) {
-      // Rotate to where the camera is facing
-      const angleYCameraDirection = Math.atan2(
-        this.world.camera.position.x - this.model.position.x,
-        this.world.camera.position.z - this.model.position.z,
-      );
-      const directionOffset = this.directionOffset(actions);
-      this.rotateQuarternion.setFromAxisAngle(
-        this.rotateAxis,
-        angleYCameraDirection + directionOffset + Math.PI,
-      );
-      this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2);
+    const directionOffset = this.directionOffset(actions);
 
-      // calculate direction
-      this.world.camera.getWorldDirection(this.direction);
-      this.direction.y = 0;
-      this.direction.normalize();
-      this.direction.applyAxisAngle(this.rotateAxis, directionOffset);
+    // calculate direction
+    this.world.camera.getWorldDirection(this.direction);
+    this.direction.y = 0;
+    this.direction.normalize();
+    this.direction.applyAxisAngle(this.rotateAxis, directionOffset);
+
+    if (!this.world.config.thirdPersonMode) {
+      this.world.camera.rotation.y = this.direction.y;
+      this.world.camera.position.set(0, 1.5, 0);
+    } else {
+      this.rotateToCamera(directionOffset);
     }
   }
 
+  private rotateToCamera(directionOffset: number) {
+    const angleYCameraDirection = Math.atan2(
+      this.world.camera.position.x - this.model.position.x,
+      this.world.camera.position.z - this.model.position.z,
+    );
+    this.rotateQuarternion.setFromAxisAngle(
+      this.rotateAxis,
+      angleYCameraDirection + directionOffset + Math.PI,
+    );
+    this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2);
+  }
+
   private updateCameraTarget(moveX: number, moveZ: number) {
-    // move camera
-    this.world.camera.position.x += moveX;
-    this.world.camera.position.z += moveZ;
+    if (this.world.config.thirdPersonMode) {
+      // move camera
+      this.world.camera.position.x += moveX;
+      this.world.camera.position.z += moveZ;
+    }
   }
 
   private directionOffset(actions: Set<EntityAction>): number {
@@ -112,6 +121,12 @@ export class Player extends Entity {
   }
 
   update(delta: number, actions: Set<EntityAction>) {
+    if (this.world.config.thirdPersonMode) {
+      this.model.remove(this.world.camera);
+    } else {
+      this.model.add(this.world.camera);
+    }
+
     this.handleAction(actions);
     this.animationMixer.update(delta);
     this.updateCameraAngle(actions);
