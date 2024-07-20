@@ -1,16 +1,15 @@
 import * as THREE from "three";
 
-export type EntityActions =
+export type EntityAction =
   | "MoveForward"
   | "MoveBackward"
   | "MoveLeft"
-  | "MoveRight"
-  | "Idle";
+  | "MoveRight";
 
 export abstract class Entity {
   abstract size: THREE.Vector3;
   abstract model: THREE.Group;
-  abstract update(delta: number, action: EntityActions): void;
+  abstract update(delta: number, actions: Set<EntityAction>): void;
 
   rotateAxis = new THREE.Vector3(0, 1, 0);
   rotateQuarternion = new THREE.Quaternion();

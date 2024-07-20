@@ -5,7 +5,7 @@ import { DirtBlock } from "./blocks/dirt";
 import { BlockTypeName } from "./blockType";
 import { Player } from "./entities/player";
 import { GameConfig } from "./game";
-import { EntityActions } from "./entity";
+import { EntityAction } from "./entity";
 
 export class World {
   readonly SIZE = new THREE.Vector3(16, 10, 16);
@@ -46,7 +46,7 @@ export class World {
     }
   }
 
-  update(delta: number, playerAction: EntityActions) {
+  update(delta: number, playerActions: Set<EntityAction>) {
     const dummy = new THREE.Object3D();
 
     for (const [blockType, blocks] of this.getAllBlocks()) {
@@ -68,7 +68,7 @@ export class World {
       mesh.computeBoundingSphere();
     }
 
-    this.player.update(delta, playerAction);
+    this.player.update(delta, playerActions);
   }
 
   getBlockMesh(blockType: BlockTypeName): THREE.InstancedMesh {

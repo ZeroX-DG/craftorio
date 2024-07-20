@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { Entity, EntityActions } from "../entity";
+import { Entity, EntityAction } from "../entity";
 import { Model } from "../model";
 import { Texture } from "../texture";
 import { World } from "../world";
@@ -45,8 +45,8 @@ export class Player extends Entity {
     this.animationMap.get(this.currentState)!.play();
   }
 
-  private handleAction(action: EntityActions) {
-    const newState = action == "Idle" ? "Idle" : "Walking";
+  private handleAction(actions: Set<EntityAction>) {
+    const newState = actions.size === 0 ? "Idle" : "Walking";
     if (this.currentState != newState) {
       const nextAnimation = this.animationMap.get(newState)!;
       const currentAnimation = this.animationMap.get(this.currentState)!;
@@ -57,17 +57,17 @@ export class Player extends Entity {
     }
   }
 
-  private updateCameraAngle() {
+  private updateCameraAngle(actions: Set<EntityAction>) {
     if (this.world.config.thirdPersonMode) {
       // Rotate to where the camera is facing
       const angleYCameraDirection = Math.atan2(
         this.world.camera.position.x - this.model.position.x,
         this.world.camera.position.z - this.model.position.z,
       );
-      const directionOffset = Math.PI;
+      const directionOffset = this.directionOffset(actions);
       this.rotateQuarternion.setFromAxisAngle(
         this.rotateAxis,
-        angleYCameraDirection + directionOffset,
+        angleYCameraDirection + directionOffset + Math.PI,
       );
       this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2);
 
@@ -75,14 +75,46 @@ export class Player extends Entity {
       this.world.camera.getWorldDirection(this.direction);
       this.direction.y = 0;
       this.direction.normalize();
-      this.direction.applyAxisAngle(this.rotateAxis, 0);
+      this.direction.applyAxisAngle(this.rotateAxis, directionOffset);
     }
   }
 
-  update(delta: number, action: EntityActions) {
-    this.handleAction(action);
+  private updateCameraTarget(moveX: number, moveZ: number) {
+    // move camera
+    this.world.camera.position.x += moveX;
+    this.world.camera.position.z += moveZ;
+  }
+
+  private directionOffset(actions: Set<EntityAction>): number {
+    let offset = 0;
+
+    if (actions.has("MoveForward")) {
+      if (actions.has("MoveLeft")) {
+        offset = Math.PI / 4;
+      } else if (actions.has("MoveRight")) {
+        offset = -Math.PI / 4;
+      }
+    } else if (actions.has("MoveBackward")) {
+      if (actions.has("MoveLeft")) {
+        offset = Math.PI / 4 + Math.PI / 2;
+      } else if (actions.has("MoveRight")) {
+        offset = -Math.PI / 4 - Math.PI / 2;
+      } else {
+        offset = Math.PI;
+      }
+    } else if (actions.has("MoveLeft")) {
+      offset = Math.PI / 2;
+    } else if (actions.has("MoveRight")) {
+      offset = -Math.PI / 2;
+    }
+
+    return offset;
+  }
+
+  update(delta: number, actions: Set<EntityAction>) {
+    this.handleAction(actions);
     this.animationMixer.update(delta);
-    this.updateCameraAngle();
+    this.updateCameraAngle(actions);
 
     if (this.currentState == "Walking") {
       // move model
@@ -90,6 +122,7 @@ export class Player extends Entity {
       const moveZ = this.direction.z * this.velocity * delta;
       this.position.x += moveX;
       this.position.z += moveZ;
+      this.updateCameraTarget(moveX, moveZ);
     }
   }
 }

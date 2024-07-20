@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { World } from "./world";
 import { Model } from "./model";
-import { EntityActions } from "./entity";
+import { EntityAction } from "./entity";
 
 export type GameConfig = {
   thirdPersonMode: boolean;
@@ -18,7 +18,7 @@ export class Game {
     thirdPersonMode: true,
   };
 
-  playerAction: EntityActions = "Idle";
+  playerActions: Set<EntityAction> = new Set();
 
   constructor() {
     this.scene = new THREE.Scene();
@@ -43,14 +43,15 @@ export class Game {
     this.camera.position.x = this.world.SIZE.x / 2;
     this.camera.position.y = this.world.SIZE.y + 10;
 
+    let orbitControls = null;
     if (this.config.thirdPersonMode) {
-      const controls = new OrbitControls(this.camera, this.renderer.domElement);
-      controls.target.set(
+      orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
+      orbitControls.target.set(
         this.world.SIZE.x / 2,
         this.world.SIZE.y,
         this.world.SIZE.z / 2,
       );
-      controls.update();
+      orbitControls.update();
     }
 
     this.scene.add(new THREE.GridHelper(100, 10));
@@ -63,13 +64,23 @@ export class Game {
   }
 
   setupControls() {
+    const mapping: Record<string, EntityAction> = {
+      w: "MoveForward",
+      a: "MoveLeft",
+      s: "MoveBackward",
+      d: "MoveRight",
+    };
     document.addEventListener("keydown", (e) => {
-      if (e.key == "w") {
-        this.playerAction = "MoveForward";
+      const action = mapping[e.key];
+      if (action) {
+        this.playerActions.add(action);
       }
     });
-    document.addEventListener("keyup", () => {
-      this.playerAction = "Idle";
+    document.addEventListener("keyup", (e) => {
+      const action = mapping[e.key];
+      if (action) {
+        this.playerActions.delete(action);
+      }
     });
   }
 
@@ -79,7 +90,7 @@ export class Game {
     const clock = new THREE.Clock();
 
     this.renderer.setAnimationLoop(() => {
-      this.world.update(clock.getDelta(), this.playerAction);
+      this.world.update(clock.getDelta(), this.playerActions);
       this.renderer.render(this.scene, this.camera);
     });
 
