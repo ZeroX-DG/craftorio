@@ -1,11 +1,10 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/Addons.js";
 import { World } from "./world";
 import { Model } from "./model";
 import { EntityAction } from "./entity";
 
 export type GameConfig = {
-  thirdPersonMode: boolean;
+  cameraMode: "third-person-facing" | "third-person-back" | "first-person";
 };
 
 export class Game {
@@ -15,7 +14,7 @@ export class Game {
   world!: World;
 
   config: GameConfig = {
-    thirdPersonMode: false,
+    cameraMode: "first-person",
   };
 
   playerActions: Set<EntityAction> = new Set();
@@ -43,17 +42,6 @@ export class Game {
     this.camera.position.x = this.world.SIZE.x / 2;
     this.camera.position.y = this.world.SIZE.y + 10;
 
-    let orbitControls = null;
-    if (this.config.thirdPersonMode) {
-      orbitControls = new OrbitControls(this.camera, this.renderer.domElement);
-      orbitControls.target.set(
-        this.world.SIZE.x / 2,
-        this.world.SIZE.y,
-        this.world.SIZE.z / 2,
-      );
-      orbitControls.update();
-    }
-
     this.scene.add(new THREE.GridHelper(100, 10));
 
     this.world.init();
@@ -64,20 +52,35 @@ export class Game {
   }
 
   setupControls() {
-    const mapping: Record<string, EntityAction> = {
+    const playerMapping: Record<string, EntityAction> = {
       w: "MoveForward",
       a: "MoveLeft",
       s: "MoveBackward",
       d: "MoveRight",
     };
+
+    const cameraModeCycle: GameConfig["cameraMode"][] = [
+      "third-person-back",
+      "third-person-facing",
+      "first-person",
+    ];
+
     document.addEventListener("keydown", (e) => {
-      const action = mapping[e.key];
+      const action = playerMapping[e.key];
       if (action) {
         this.playerActions.add(action);
       }
+
+      if (e.key == "c") {
+        const index = cameraModeCycle.findIndex(
+          (mode) => mode === this.config.cameraMode,
+        );
+        const nextIndex = (index + 1) % cameraModeCycle.length;
+        this.config.cameraMode = cameraModeCycle[nextIndex];
+      }
     });
     document.addEventListener("keyup", (e) => {
-      const action = mapping[e.key];
+      const action = playerMapping[e.key];
       if (action) {
         this.playerActions.delete(action);
       }

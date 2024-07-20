@@ -21,6 +21,7 @@ export class Player extends Entity {
     super();
     this.world = world;
     this.model.position.set(x, y, z);
+    this.model.add(this.world.camera);
 
     const skin = Texture.OLIVER_SKIN;
     this.model.traverse((object: any) => {
@@ -66,31 +67,19 @@ export class Player extends Entity {
     this.direction.normalize();
     this.direction.applyAxisAngle(this.rotateAxis, directionOffset);
 
-    if (!this.world.config.thirdPersonMode) {
-      this.world.camera.rotation.y = this.direction.y;
+    if (this.world.config.cameraMode == "first-person") {
       this.world.camera.position.set(0, 1.5, 0);
+      this.world.camera.lookAt(
+        this.position.x + 10,
+        this.position.y,
+        this.position.z,
+      );
+    } else if (this.world.config.cameraMode == "third-person-back") {
+      this.world.camera.position.set(0, 5, -10);
+      this.world.camera.lookAt(this.position);
     } else {
-      this.rotateToCamera(directionOffset);
-    }
-  }
-
-  private rotateToCamera(directionOffset: number) {
-    const angleYCameraDirection = Math.atan2(
-      this.world.camera.position.x - this.model.position.x,
-      this.world.camera.position.z - this.model.position.z,
-    );
-    this.rotateQuarternion.setFromAxisAngle(
-      this.rotateAxis,
-      angleYCameraDirection + directionOffset + Math.PI,
-    );
-    this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2);
-  }
-
-  private updateCameraTarget(moveX: number, moveZ: number) {
-    if (this.world.config.thirdPersonMode) {
-      // move camera
-      this.world.camera.position.x += moveX;
-      this.world.camera.position.z += moveZ;
+      this.world.camera.position.set(0, 5, 10);
+      this.world.camera.lookAt(this.position);
     }
   }
 
@@ -121,12 +110,6 @@ export class Player extends Entity {
   }
 
   update(delta: number, actions: Set<EntityAction>) {
-    if (this.world.config.thirdPersonMode) {
-      this.model.remove(this.world.camera);
-    } else {
-      this.model.add(this.world.camera);
-    }
-
     this.handleAction(actions);
     this.animationMixer.update(delta);
     this.updateCameraAngle(actions);
@@ -137,7 +120,6 @@ export class Player extends Entity {
       const moveZ = this.direction.z * this.velocity * delta;
       this.position.x += moveX;
       this.position.z += moveZ;
-      this.updateCameraTarget(moveX, moveZ);
     }
   }
 }
