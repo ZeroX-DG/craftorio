@@ -6,6 +6,7 @@ import { BlockTypeName } from "./blockType";
 import { Player } from "./entities/player";
 import { GameConfig } from "./game";
 import { EntityAction } from "./entity";
+import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
 
 export class World {
   readonly SIZE = new THREE.Vector3(16, 10, 16);
@@ -23,6 +24,7 @@ export class World {
     public scene: THREE.Scene,
     public camera: THREE.Camera,
     public config: GameConfig,
+    public controls: PointerLockControls,
   ) {}
 
   init() {

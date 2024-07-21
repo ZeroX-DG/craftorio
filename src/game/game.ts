@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { World } from "./world";
 import { Model } from "./model";
 import { EntityAction } from "./entity";
+import { PointerLockControls } from "three/addons/controls/PointerLockControls.js";
 
 export type GameConfig = {
   cameraMode: "third-person-facing" | "third-person-back" | "first-person";
@@ -17,6 +18,8 @@ export class Game {
     cameraMode: "first-person",
   };
 
+  controls: PointerLockControls;
+
   playerActions: Set<EntityAction> = new Set();
 
   constructor() {
@@ -27,12 +30,13 @@ export class Game {
       0.1,
       1000,
     );
+    this.controls = new PointerLockControls(this.camera, document.body);
     this.renderer = new THREE.WebGLRenderer();
   }
 
   async setup() {
     await Model.loadModels();
-    this.world = new World(this.scene, this.camera, this.config);
+    this.world = new World(this.scene, this.camera, this.config, this.controls);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
 
     this.scene.add(new THREE.DirectionalLight(0xf7d67c, 2));
@@ -52,6 +56,8 @@ export class Game {
   }
 
   setupControls() {
+    this.scene.add(this.controls.getObject());
+
     const playerMapping: Record<string, EntityAction> = {
       w: "MoveForward",
       a: "MoveLeft",
@@ -79,11 +85,21 @@ export class Game {
         this.config.cameraMode = cameraModeCycle[nextIndex];
       }
     });
+
     document.addEventListener("keyup", (e) => {
       const action = playerMapping[e.key];
       if (action) {
         this.playerActions.delete(action);
       }
+
+      if (e.key == "esc") {
+        this.controls.unlock();
+      }
+    });
+
+    document.addEventListener("click", (e) => {
+      e.preventDefault();
+      this.controls.lock();
     });
   }
 

@@ -21,7 +21,6 @@ export class Player extends Entity {
     super();
     this.world = world;
     this.model.position.set(x, y, z);
-    this.model.add(this.world.camera);
 
     const skin = Texture.OLIVER_SKIN;
     this.model.traverse((object: any) => {
@@ -68,18 +67,25 @@ export class Player extends Entity {
     this.direction.applyAxisAngle(this.rotateAxis, directionOffset);
 
     if (this.world.config.cameraMode == "first-person") {
-      this.world.camera.position.set(0, 1.5, 0);
-      this.world.camera.lookAt(
-        this.position.x + 10,
-        this.position.y,
-        this.position.z,
+      this.rotateQuarternion.set(
+        0,
+        this.world.camera.quaternion.y,
+        0,
+        this.world.camera.quaternion.w,
       );
+
+      const ninetyRotateQuat = new THREE.Quaternion();
+      ninetyRotateQuat.setFromAxisAngle(this.rotateQuarternion, Math.PI);
+      ninetyRotateQuat.normalize();
+      this.rotateQuarternion.multiply(ninetyRotateQuat);
+
+      this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2);
     } else if (this.world.config.cameraMode == "third-person-back") {
       this.world.camera.position.set(0, 5, -10);
-      this.world.camera.lookAt(this.position);
+      // this.world.camera.lookAt(this.position);
     } else {
       this.world.camera.position.set(0, 5, 10);
-      this.world.camera.lookAt(this.position);
+      // this.world.camera.lookAt(this.position);
     }
   }
 
@@ -118,8 +124,14 @@ export class Player extends Entity {
       // move model
       const moveX = this.direction.x * this.velocity * delta;
       const moveZ = this.direction.z * this.velocity * delta;
+      this.world.controls.moveRight(moveX);
+      this.world.controls.moveForward(-moveZ);
       this.position.x += moveX;
       this.position.z += moveZ;
     }
+
+    const camera = this.world.controls.getObject();
+
+    camera.position.set(this.position.x, this.position.y + 1, this.position.z);
   }
 }
