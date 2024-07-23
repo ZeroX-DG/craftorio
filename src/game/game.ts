@@ -67,7 +67,7 @@ export class Game {
 
     const cameraModeCycle: GameConfig["cameraMode"][] = [
       "third-person-back",
-      "third-person-facing",
+      // TODO: Support third person front
       "first-person",
     ];
 

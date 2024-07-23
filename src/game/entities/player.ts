@@ -66,7 +66,10 @@ export class Player extends Entity {
     this.direction.normalize();
     this.direction.applyAxisAngle(this.rotateAxis, directionOffset);
 
-    if (this.world.config.cameraMode == "first-person") {
+    if (
+      this.world.config.cameraMode === "first-person" ||
+      this.world.config.cameraMode === "third-person-back"
+    ) {
       this.rotateQuarternion.set(
         0,
         this.world.camera.quaternion.y,
@@ -78,15 +81,8 @@ export class Player extends Entity {
       ninetyRotateQuat.setFromAxisAngle(this.rotateQuarternion, Math.PI);
       ninetyRotateQuat.normalize();
       this.rotateQuarternion.multiply(ninetyRotateQuat);
-
-      this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2);
-    } else if (this.world.config.cameraMode == "third-person-back") {
-      this.world.camera.position.set(0, 5, -10);
-      // this.world.camera.lookAt(this.position);
-    } else {
-      this.world.camera.position.set(0, 5, 10);
-      // this.world.camera.lookAt(this.position);
     }
+    this.model.quaternion.rotateTowards(this.rotateQuarternion, 0.2);
   }
 
   private directionOffset(actions: Set<EntityAction>): number {
@@ -124,14 +120,30 @@ export class Player extends Entity {
       // move model
       const moveX = this.direction.x * this.velocity * delta;
       const moveZ = this.direction.z * this.velocity * delta;
-      this.world.controls.moveRight(moveX);
-      this.world.controls.moveForward(-moveZ);
       this.position.x += moveX;
       this.position.z += moveZ;
     }
 
     const camera = this.world.controls.getObject();
 
-    camera.position.set(this.position.x, this.position.y + 1, this.position.z);
+    if (this.world.config.cameraMode === "first-person") {
+      camera.position.set(
+        this.position.x,
+        this.position.y + 1,
+        this.position.z,
+      );
+    } else if (this.world.config.cameraMode === "third-person-back") {
+      let vec = new THREE.Vector3();
+      camera.getWorldDirection(vec);
+
+      vec.multiplyScalar(-5);
+      vec.add({
+        x: this.position.x,
+        y: 0,
+        z: this.position.z,
+      });
+
+      camera.position.set(vec.x, this.position.y + 3, vec.z);
+    }
   }
 }
