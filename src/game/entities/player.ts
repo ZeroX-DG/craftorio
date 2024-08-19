@@ -125,6 +125,7 @@ export class Player extends Entity {
     }
 
     const camera = this.world.controls.getObject();
+    this.model.visible = true;
 
     if (this.world.config.cameraMode === "first-person") {
       camera.position.set(
@@ -132,6 +133,7 @@ export class Player extends Entity {
         this.position.y + 1,
         this.position.z,
       );
+      this.model.visible = false;
     } else if (this.world.config.cameraMode === "third-person-back") {
       let vec = new THREE.Vector3();
       camera.getWorldDirection(vec);
