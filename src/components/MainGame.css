@@ -1,0 +1,30 @@
+#cross {
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    --cross-color: rgba(255, 255, 255, 0.8);
+    --cross-size: 15px;
+    --cross-thickness: 2px;
+}
+
+#cross::before {
+    content: '';
+    width: var(--cross-size);
+    height: var(--cross-thickness);
+    background: var(--cross-color);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#cross::after {
+    content: '';
+    width: var(--cross-thickness);
+    height: var(--cross-size);
+    background: var(--cross-color);
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}

@@ -1,5 +1,6 @@
 import { createEffect } from 'solid-js';
 import { Game } from '../game/game';
+import './MainGame.css';
 
 export const MainGame = () => {
     let gameContainer!: HTMLDivElement;
@@ -12,6 +13,9 @@ export const MainGame = () => {
     });
 
     return (
-        <div ref={gameContainer}></div>
+        <>
+            <div id="cross"></div>
+            <div ref={gameContainer}></div>
+        </>
     );
 }
